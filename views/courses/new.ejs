@@ -1,0 +1,40 @@
+<h1>Dodaj predmet</h1>
+
+<div class="flash"></div>
+
+<form method="POST" id="dodajPredmetForma">
+  <div class="form-group">
+    <label>
+      Naziv predmeta: <input type="text" id="nazivPredmeta" class="form-control">
+    </label>
+  </div>
+  <button class="btn btn-primary">Dodaj predmet</button>
+</form>
+
+<script>
+  $("#dodajPredmetForma").submit(function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    let ime = $("#nazivPredmeta").val();
+    
+    $.ajax({
+      method: "POST",
+      url: "/courses",
+      data: {
+        ime: ime,
+      },
+      success: function (data, status) {
+        console.log(data);
+        $(".flash")
+          .removeClass("alert-danger")
+          .addClass("alert alert-success")
+          .text("Predmet uspjesno kreiran");
+      },
+      error: function (err) {
+        console.log(err);
+        $(".flash").addClass("alert alert-danger").text(err.responseJSON.msg);
+      }
+    })
+  });
+</script>

@@ -26,3 +26,28 @@ create table pitanje(
 	id serial primary key,
 	tekst varchar(100) not null
 );
+
+
+alter table predmeti add column predavac_id int;
+alter table predmeti add constraint fk_predavac_id foreign key (predavac_id) references predavac(id) on delete cascade;
+
+alter table predavanja add column predmet_id int;
+alter table predavanja add constraint fr_predmet_id foreign key (predmet_id) references predmeti(id) on delete cascade;
+
+alter table predavac alter column password type varchar(100);
+
+
+select * from predmeti;
+
+select * from predavac;
+
+drop function getSubjectForProfesorWithId(id_prof int)
+
+create or replace function getSubjectForProfesorWithId(in id_prof int) returns table (id int,ime varchar)
+as $$
+begin
+	return query select pr.id, pr.ime from predavac p left join predmeti pr on p.id=id_prof; 
+end; $$
+language plpgsql;
+
+select * from getSubjectForProfesorWithId(1);

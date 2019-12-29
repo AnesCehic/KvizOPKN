@@ -1,0 +1,49 @@
+<div class="container form">
+  <h1>Login</h1>
+
+  <div class="flash">
+
+  </div>
+
+  <form class="loginForm" method="POST">
+    <div class="form-group">
+      <label>
+        Email: <input type="email" class="form-control" name="email" id="email">
+      </label>
+    </div>
+    <div class="form-group">
+      <label for="">
+        Password: <input type="password" class="form-control" name="password" id="password">
+      </label>
+    </div>
+
+    <input type="submit" class="btn btn-primary" value="Log in">
+  </form>
+
+  <a href="/" class="btn btn-primary">Home</a>
+  <a class="btn btn-primary" href="/users/logout" id="">Logout</a>
+</div>
+
+<script>
+  $(".loginForm").submit(function (event) {
+    event.preventDefault();
+
+    let email = $("#email").val();
+    let pass = $("#password").val();
+
+    $.ajax({
+      method: "POST",
+      url: "/users/login",
+      data: {
+        email: email,
+        password: pass
+      },
+      success: function (data, status) {
+        location.href = "/courses";
+      },
+      error: function (err) {
+        $(".flash").addClass("alert alert-danger").text(err.responseJSON.msg);
+      }
+    });
+  });
+</script>

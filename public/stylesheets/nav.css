@@ -1,0 +1,17 @@
+nav {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  background-color: lightgray;
+  padding: 10px 20px;
+}
+
+nav a {
+  margin: 0 10px;
+  color: black;
+}
+
+nav a:hover {
+  cursor: pointer;
+  text-decoration: none;
+}
