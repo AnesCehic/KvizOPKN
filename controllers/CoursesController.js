@@ -33,6 +33,13 @@ module.exports = {
     res.send("Update");
   },
   deleteCourse: (req, res) => {
-    res.send("Delete" + req.params.id)
+    console.log("Brisemo " + req.params.id);
+    db.query("DELETE FROM predmeti WHERE id = $1", [req.params.id])
+      .then(resp => {
+        res.sendStatus(204);
+      })
+      .catch(err => {
+        res.sendStatus(400);
+      });
   }
 }

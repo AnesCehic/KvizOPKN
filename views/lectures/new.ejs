@@ -1,0 +1,48 @@
+<div>
+  <h2>Dodaj predavanje</h2>
+
+  <div class="flash"></div>
+
+  <form method="post" id="formLecture">
+    <div class="form-group">
+      <label>
+        Naziv predavanja: <input type="text" name="nazivPredavanja" class="form-control" id="naziv" required>
+      </label>
+    </div>
+    <div class="form-group">
+      <label>
+        Redni broj: <input type="number" name="redniBroj" class="form-control" id="redniBroj" required min="1">
+      </label>
+    </div>
+    <input type="submit" value="Dodaj predavanje" class="btn btn-primary">
+  </form>
+</div>
+
+<script>
+  $("#formLecture").on('submit', function (event) {
+    event.preventDefault();
+
+    let naziv = $("#naziv").val();
+    let redniBroj = $("#redniBroj").val();
+
+    let id
+
+    $.ajax({
+      method: 'POST',
+      url: "/courses/" + '<%= id %>' +"/lectures",
+      data: {
+        nazivPredavanja: naziv,
+        redniBroj: redniBroj,
+        predId: '<%= id %>'
+      },
+      success: (data, status) => {
+        if (data === 'Created') {
+          location.href = "/courses/" + '<%= id %>' + '/lectures';
+        }
+      },
+      error: (error) => {
+        $(".flash").addClass("alert alert-danger").text(error.responseJSON.msg);
+      }
+    });
+  });
+</script>

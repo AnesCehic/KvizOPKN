@@ -1,0 +1,43 @@
+<div>
+  <h2>Update predavanje</h2>
+
+  <div class="flash"></div>
+
+  <form method="post" id="formLectureUpdate">
+    <div class="form-group">
+      <label>
+        Naziv predavanja: <input type="text" value="<%= predavanje.naziv_predavanja %>" name="nazivPredavanja" class="form-control" id="naziv" required>
+      </label>
+    </div>
+    <div class="form-group">
+      <label>
+        Redni broj: <input type="number" value="<%= predavanje.redni_broj %>" name="redniBroj" class="form-control" id="redniBroj" required min="1">
+      </label>
+    </div>
+    <input type="submit" value="Update predavanje" class="btn btn-primary">
+  </form>
+</div>
+
+<script>
+  $("#formLectureUpdate").on('submit', function (event) {
+    event.preventDefault();
+
+    let naziv = $("#naziv").val();
+    let redniBroj = $("#redniBroj").val();
+
+    $.ajax({
+      method: 'PUT',
+      url: "/courses/" + '<%= id %>' + "/lectures/" + '<%= predavanje.id %>',
+      data: {
+        nazivPredavanja: naziv,
+        redniBroj: redniBroj,
+      },
+      success: (data, status) => {
+        location.href = "/courses/<%= id %>/lectures";
+      },
+      error: (error) => {
+        $(".flash").addClass("alert alert-danger").text(error.responseJSON.msg);
+      }
+    });
+  });
+</script>

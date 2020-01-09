@@ -1,0 +1,35 @@
+<div>
+  <h1>Lista predavanja</h1>
+
+  <a href="/courses/<%= id %>/lectures/new">Dodaj predavanje</a>
+
+  <table>
+    <tr>
+      <td>Naziv</td>
+      <td>Redni broj</td>
+    </tr>
+    <% predavanja.forEach(pred => { %>
+      <tr>
+        <td><%= pred.naziv_predavanja %></td>
+        <td>#<%= pred.redni_broj %></td>
+        <td><a href="/courses/<%= id %>/lectures/<%= pred.id %>/update">Update</a></td>
+        <td><button  onclick="deleteLecture('<%= pred.id %>')">Delete</button></td>
+      </tr>
+    <% }); %>
+    </table>
+</div>
+
+<script>
+  function deleteLecture(id) {
+    $.ajax({
+      method: "DELETE",
+      url: '/courses/lectures/' + id,
+      success: function () {
+        location.reload();
+      },
+      error: function () {
+        alert("Greska prilikom brisanja");
+      }
+    });
+  }
+</script>

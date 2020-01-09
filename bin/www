@@ -21,6 +21,26 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
+var io = require('socket.io').listen(server);
+
+io.on('connection', (socket) => {
+
+  socket.on('join_room', ({ room }) => {
+   
+    socket.join(room);
+    console.log(io.sockets.adapter.rooms);
+    socket.emit('joined_room', {
+      room,
+      msg: `Soba ${room}`
+    })
+  })
+
+  socket.on('msg', function ({ question, room }) {
+    console.log(question);
+    io.to(room).emit('msg', question);
+  });
+})
+
 /**
  * Listen on provided port, on all network interfaces.
  */

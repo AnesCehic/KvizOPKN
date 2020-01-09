@@ -1,0 +1,39 @@
+<div>
+  <h1>Predmeti</h1>
+
+  <a href="/courses/new">Dodaj predmet</a>
+
+  <table>
+    <tr>
+      <th>ID</th>
+      <th>Naziv predmeta</th>
+    </tr>
+    <% courses.forEach(c => { %>
+      <tr>
+        <td><%= c.id %></td>
+        <td><a href="/courses/<%= c.id %>/lectures"><%= c.ime %></a></td>
+        <td><button onclick="obrisiPredmet('<%= c.id %>')">Obrisi</button></td>
+      </tr>
+    <% }); %>
+  </table>
+</div>
+
+<script>
+  function obrisiPredmet(id) {
+    $.ajax({
+      method: "DELETE",
+      url: "/courses/" + id,
+      success: (data, status) => {
+        alert("Predmet uspjesno obrisan");
+        refresh();
+      },
+      error: (err) => {
+        alert("Greska pri brisanju!");
+      }
+    });
+  }
+
+  function refresh() {
+    location.reload();
+  }
+</script>

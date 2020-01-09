@@ -1,0 +1,52 @@
+<div>
+  <h1>Ask questions</h1>
+
+  <label>
+    Room: <input type="number" name="room" id="room">
+  </label>
+
+  <button class="btn btn-primary joinRoom">Join room!</button>
+
+  <label>
+    Question text: <input type="text" name="question" id="question">
+  </label>
+
+  <button class="btn btn-primary addQuestion">Ask!</button>
+
+  <h2>List of questions</h2>
+
+  <ul class="listOfQuestions">
+    
+  </ul>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket;
+  $(document).ready(function () {
+    socket = io('http://localhost:3000');
+    
+    socket.on('joined_room', (data) => {
+      localStorage.setItem('my_room', data.room);
+      alert(data.msg);
+    });
+    
+    socket.on('msg', (msg) => {
+      $(".listOfQuestions").append("<li>" + msg + "</li>");
+    });
+  });
+
+  $(".addQuestion").click(function () {
+    let question = $("#question").val();
+
+    socket.emit('msg', {question, room: localStorage.getItem('my_room')});
+  });
+
+  $(".joinRoom").click(function () {
+    let roomNumber = $("#room").val();
+
+    socket.emit('join_room', {
+      room: roomNumber,
+    });
+  });
+</script>
