@@ -8,6 +8,8 @@ var app = require('../app');
 var debug = require('debug')('kvizopkn:server');
 var http = require('http');
 
+const db = require('../config/db');
+
 /**
  * Get port from environment and store in Express.
  */
@@ -37,7 +39,30 @@ io.on('connection', (socket) => {
 
   socket.on('msg', function ({ question, room }) {
     console.log(question);
-    io.to(room).emit('msg', question);
+    db.query("insert into pitanja_za_profesora(pitanje_tekst, broj_odobrenja, broj_odbijenica, predavanje_id) values($1, $2, $3, $4) returning id",
+      [question, 0, 0, room]
+    ).then(result => {
+      let id = result.rows[0].id;
+      io.to(room).emit('msg', { question, id });
+    }).catch(err => {
+      console.log(err);
+    })
+  });
+
+  socket.on('odobri', function ({ pitanje, room }) {
+    db.query("UPDATE pitanja_za_profesora SET broj_odobrenja = broj_odobrenja + 1 WHERE predavanje_id=$1 AND pitanje_tekst=$2 returning id, broj_odobrenja", [room, pitanje])
+      .then(res => {
+        let id = res.rows[0].id;
+        let br_od = res.rows[0].broj_odobrenja;
+        console.log(res);
+        console.log("Odobreno");
+        io.to(room).emit('odobrenja', { id, br_od })
+      })
+      .catch(err => {
+        console.log("Nije odobreno");
+      });
+
+    
   });
 })
 

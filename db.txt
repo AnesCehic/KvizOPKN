@@ -65,3 +65,5 @@ CREATE TABLE pitanja_za_profesora (
 alter table pitanja_za_profesora
 add constraint unique_pitanje_tekst
 unique (pitanje_tekst)
+
+alter table anketa add column code varchar(6);

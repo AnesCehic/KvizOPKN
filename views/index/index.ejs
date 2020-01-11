@@ -22,7 +22,9 @@
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  var socket;
+  let socket;
+  let pitanja = [];
+
   $(document).ready(function () {
     socket = io('http://localhost:3000');
     
@@ -31,10 +33,28 @@
       alert(data.msg);
     });
     
-    socket.on('msg', (msg) => {
-      $(".listOfQuestions").append("<li>" + msg + "</li>");
+    socket.on('msg', ({ question, id }) => {
+      //pitanja.push({ id, question, odobrenja: 0 });
+      $(".listOfQuestions").append("<li data-o='0' class='" + id + "'>" + question + `<button onclick='odobri("${question}", "${id}")'>Odobri</button></li>`);
+    });
+
+    socket.on('odobrenja', function ({ id, br_od }) {
+      const odo = parseInt($(`.${id}`).attr("data-o")) + 1;
+      $(`.${id}`).attr("data-o", br_od);
+
+      let pitanja = $("li");
+      console.log(pitanja);
+      //pitanja.sort((a,b) => (a.last_nom > b.last_nom) ? 1 : ((b.last_nom > a.last_nom) ? -1 : 0)); 
     });
   });
+
+  function odobri(pitanje, id) {
+    console.log(pitanje)
+    socket.emit('odobri', {
+      pitanje,
+      room: localStorage.getItem('my_room')
+    });
+  }
 
   $(".addQuestion").click(function () {
     let question = $("#question").val();
