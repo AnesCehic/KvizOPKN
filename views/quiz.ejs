@@ -1,0 +1,134 @@
+<div>
+  <h1>Quiz is starting</h1>
+
+  <label>
+    Kod: <input type="text" class="form-control">
+  </label>
+  <button class="btn kod btn-success">Potvrda</button>
+
+  <button class="btn sljedece btn-primary">Sljedece pitanje</button>
+  <p>Trenutno pitanje: <span></span></p>
+  
+  <div style="width: 400px; height: 400px;">
+    <canvas id="myChart" width="40vw" height="40vw"></canvas>
+  </div>
+
+  <table></table>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var pitanja = [];
+  var igraci = [];
+  var bodovi = [];
+  var bodoviOdStudenata = [];
+  var trenutnoPitanje = 0;
+  var socket = io('http://localhost:3000', {
+    transports: ['websocket']
+  });
+  var soba;
+
+  (function getQuestions() {
+    $.ajax({
+      method: "GET",
+      url: "/start/<%= id %>/getQuestions",
+      success: function(data, status) {
+        console.log(data)
+
+        data.pitanja.forEach(pit => {
+          pitanja.push(pit);
+        })
+      },
+      error: function(err) {
+        console.log(err);
+      }
+    });
+  })();
+
+  $(document).ready(function () {
+    /*socket.on("igrac", function(igrac) {
+      console.log("Igrac ", igrac)
+      igraci.push({ igrac, bodovi: 0});
+    })*/
+
+    socket.on("rezultati", function(data) {
+      console.log(data)
+      igraci = [];
+      bodovi = [];
+
+      $("#myChart").empty();
+
+      let s = bodoviOdStudenata.filter(b => b.username == data.username);
+      if(s.length == 0) {
+        bodoviOdStudenata.push(data);
+      } else {
+        let index = bodoviOdStudenata.findIndex(b => b.username == data.username);
+        bodoviOdStudenata[index].bodovi += data.bodovi;
+      }
+
+      $("table").empty();
+      $('table').append("<tr><th>Username</th><th>Bodovi</th></tr>")
+      bodoviOdStudenata.forEach(bs => {
+          igraci.push(bs.username);
+          bodovi.push(bs.bodovi)
+
+          $('table').append(`<tr><td>${bs.username}</td><td>${bs.bodovi}</td></tr>`)
+      })
+
+      var ctx = document.getElementById('myChart');
+      var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: igraci,
+            datasets: [{
+                label: 'Number of points',
+                data: bodovi,
+                backgroundColor: [
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+          scales: {
+            yAxes: [{
+                ticks: {
+                    beginAtZero: true
+                }
+            }]
+          }
+        }
+      });
+    })
+  })
+
+  $(".kod").click(function() {
+    soba = $("input").val();
+
+    socket.emit("join quiz", {
+      soba
+    })
+  })
+
+  $(".sljedece").click(function() {
+    if(soba == undefined) {
+      alert("Unesite kod prvo!");
+      return;
+    }
+    trenutnoPitanje++;
+    if(trenutnoPitanje - 1 >= pitanja.length) {
+      alert("Kraj kviza!");
+    } else {
+      $("span").text(pitanja[trenutnoPitanje - 1].tekst)
+      socket.emit("next question", {
+        soba,
+        pitanje: pitanja[trenutnoPitanje - 1]
+      })
+    }
+  });
+
+  
+</script>

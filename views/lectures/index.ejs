@@ -10,7 +10,7 @@
     </tr>
     <% predavanja.forEach(pred => { %>
       <tr>
-        <td><%= pred.naziv_predavanja %></td>
+        <td><a href="/lecture/<%= pred.id %>/questionnaires"><%= pred.naziv_predavanja %></a></td>
         <td>#<%= pred.redni_broj %></td>
         <td><a href="/courses/<%= id %>/lectures/<%= pred.id %>/update">Update</a></td>
         <td><button  onclick="deleteLecture('<%= pred.id %>')">Delete</button></td>

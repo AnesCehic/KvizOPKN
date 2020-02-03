@@ -5,7 +5,7 @@ const db = require('../config/db');
 const indexController = require('../controllers/IndexRouter');
 
 /* GET home page. */
-router.get('/', indexController.mainRoute);
-router.get('/:id', indexController.lectureQuestions);
+//router.get('/', indexController.mainRoute);
+router.get('/', indexController.lectureQuestions);
 
 module.exports = router;

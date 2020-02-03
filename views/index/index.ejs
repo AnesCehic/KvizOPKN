@@ -25,35 +25,55 @@
   let socket;
   let pitanja = [];
 
+  function updateUI(n) {
+    $(".listOfQuestions").empty();
+    pitanja = n.sort((a,b) => (a.broj_odobrenja > b.broj_odobrenja) ? -1 : ((b.broj_odobrenja > a.broj_odobrenja) ? 1 : 0));
+    pitanja.forEach(x => {
+      $(".listOfQuestions").append(`<li>${x.pitanje_tekst}, ${x.broj_odobrenja}<button onclick="odobri('${x.id}')">Odobri</button><button onclick="odgovori('${x.id}')">Odgovoreno</button></li>`);
+    });
+  }
+
   $(document).ready(function () {
-    socket = io('http://localhost:3000');
+    socket = io('http://localhost:3000', {
+      transports: ['websocket']
+    });
     
     socket.on('joined_room', (data) => {
       localStorage.setItem('my_room', data.room);
       alert(data.msg);
+      pitanja = data.pitanja;
+      
+      updateUI(pitanja);
     });
+
+    socket.on("greska", (data) => {
+      alert(data);
+    })
     
-    socket.on('msg', ({ question, id }) => {
-      //pitanja.push({ id, question, odobrenja: 0 });
-      $(".listOfQuestions").append("<li data-o='0' class='" + id + "'>" + question + `<button onclick='odobri("${question}", "${id}")'>Odobri</button></li>`);
+    socket.on('msg', (pitanje) => {
+      console.log(pitanje);
+      pitanja.push(pitanje);
+      updateUI(pitanja);
     });
 
-    socket.on('odobrenja', function ({ id, br_od }) {
-      const odo = parseInt($(`.${id}`).attr("data-o")) + 1;
-      $(`.${id}`).attr("data-o", br_od);
-
-      let pitanja = $("li");
-      console.log(pitanja);
-      //pitanja.sort((a,b) => (a.last_nom > b.last_nom) ? 1 : ((b.last_nom > a.last_nom) ? -1 : 0)); 
+    socket.on('odobrenja', function ({ pitanje }) {
+      console.log(pitanje.broj_odobrenja)
+      pitanja.find(x => x.id == pitanje.id).broj_odobrenja = pitanje.broj_odobrenja;
+      updateUI(pitanja);
+       
     });
   });
 
-  function odobri(pitanje, id) {
-    console.log(pitanje)
+  function odobri(id) {
+    console.log(id)
     socket.emit('odobri', {
-      pitanje,
+      id,
       room: localStorage.getItem('my_room')
     });
+  }
+
+  function odgovori(id) {
+    console.log(id);
   }
 
   $(".addQuestion").click(function () {

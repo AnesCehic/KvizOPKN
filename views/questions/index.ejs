@@ -1,0 +1,117 @@
+<style>
+  #odgovori {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+  }
+
+  #odgovori li:hover {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+</style>
+
+<div>
+  <h1>Questions</h1>
+
+  <br>
+  <div id="odgovori">
+    <div>
+      <form action="/questionnaire/<%= id %>/questions" method="post">
+        <label for="" class="form-group">
+          Tekst pitanja: <input type="text" class="form-control" name="tekst">
+        </label>
+        <button class="btn btn-primary">Dodaj pitanje</button>
+      </form>
+
+      <div>
+        <ul>
+          <% pitanja.forEach(pitanje => { %>
+            <li onclick="uzmiOdgovore('<%= pitanje.id %>', '<%= pitanje.tekst %>')"><%= pitanje.tekst %></li>
+          <% }); %>
+        </ul>
+      </div>
+    </div>
+
+    <div>
+      <h1>Add answer for <br> <span></span></h1>
+
+      <form class="add">
+        <label>
+          Tekst odgovora: <input type="text" name="tekst" placeholder="odgovor" class="form-control tekst">
+        </label>
+        <br>
+        <label>
+          Da:
+          <input type="radio" name="rjesenje" value="true" onchange="odg(true)">
+          Ne:
+          <input type="radio" name="rjesenje" value="false" onchange="odg(false)">
+        </label>
+        <br>
+        <input type="submit" value="Add answer" class="btn btn-primary">
+      </form>
+
+      <br>
+
+      <h2>List of answers for selected question</h2>
+      <ol>
+
+      </ol>
+    </div>
+  </div>
+</div>
+
+<script>
+  var currentQuestionId;
+  var idLecture = '<%= id %>';
+  var answer = false;
+
+  function uzmiOdgovore(id2, t) {
+    currentQuestionId = id2
+
+    $("span").text(t);
+
+    $.ajax({
+      method: "GET",
+      url: "/questionnaire/" + idLecture + "/questions/" + currentQuestionId,
+      success: function(data, status) {
+        console.log(data);
+        $("ol li").remove();
+        data.odgovori.forEach(o => {
+          $("ol").append(`<li>${o.odgovora}, ${o.rjesenje}</li>`)
+        });
+      },
+      error: function(err) {
+        alert("Greska");
+      }
+    });
+  };
+
+  $(".add").submit(function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    let tekst = $(".tekst").val();
+    let a = answer;
+
+    $.ajax({
+      method: "POST",
+      url: "/questionnaire/" + idLecture + "/questions/" + currentQuestionId,
+      data: {
+        tekst,
+        a,
+        currentQuestionId
+      },
+      success: function(data, status) {
+        location.reload();
+      },
+      error: function(err) {
+        alert("Greska");
+      }
+    });
+  });
+
+  function odg(r) {
+    answer = r;
+  }
+</script>

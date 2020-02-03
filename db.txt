@@ -67,3 +67,48 @@ add constraint unique_pitanje_tekst
 unique (pitanje_tekst)
 
 alter table anketa add column code varchar(6);
+
+alter table predavanja add column status boolean default false;
+
+create or replace function checkLectureStatus(in idPredavanja int)
+returns boolean as $$
+declare
+	stat boolean;
+begin
+	select status into stat from predavanja where id = idPredavanja;
+	return stat;
+end $$
+language plpgsql;
+
+
+create table student (
+	id serial primary key,
+	name varchar(20),
+	email varchar(50) not null unique
+);
+
+alter table anketa add column predavanje_id int;
+alter table anketa add constraint predavanje_id_fk foreign key (predavanje_id) references predavanja(id);
+
+alter table pitanje add column anketa_id int;
+alter table pitanje add constraint anketa_id_fk foreign key (anketa_id) references anketa(id);
+
+create table podudjeni_odgovor (
+	id serial primary key,
+	tekst_odgovora varchar(255),
+	pitanje_id int,
+	foreign key (pitanje_id) references pitanje(id)
+);
+
+create table odgovor (
+	id serial primary key,
+	odgovora varchar(255),
+	pitanje_id int,
+	student_id int,
+	foreign key (pitanje_id) references pitanje(id),
+	foreign key (student_id) references student(id)
+);
+
+alter table anketa add constraint unique_anketa_code unique (code);
+
+alter table odgovor add column rjesenje boolean;

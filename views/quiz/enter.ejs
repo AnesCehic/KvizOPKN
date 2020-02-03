@@ -1,0 +1,13 @@
+<div>
+  <h1>Unesite username</h1>
+
+  <p>Username: <input type="text" id="username"></p>
+  <button class="btn btn-primary">Potvrda!</button>
+</div>
+
+<script>
+  $(".btn").click(function() {
+    localStorage.setItem("username", $("#username").val());
+    location.href = "/igraj";
+  });
+</script>

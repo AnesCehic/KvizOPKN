@@ -1,0 +1,116 @@
+<div style="margin: 30px;">
+  <h1>Molimo sacekajte pitanje!</h1>
+  <h3 id="vrijeme"></h3>
+
+  <h2 id="pitanje"></h2>
+
+  <form class="odgovori">
+
+  </form>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io('http://localhost:3000', {
+    transports: ['websocket']
+  });
+  var soba;
+  var time;
+  var seconds = 10 * 1000;
+  var odgovori = [];
+  var odgovoriOdabrani = [];
+  var odg;
+  var bodovi;
+
+  $(document).ready(function() {
+    soba = localStorage.getItem("sobaAnketa");
+    socket.emit("join quiz", {
+      soba
+    });
+
+    console.log(localStorage.getItem("username"))
+
+    socket.emit("igrac", {
+      soba,
+      igrac: localStorage.getItem("username"),
+    })
+
+    socket.on("novo pitanje", function(data) {
+      $("form").empty();
+      $("#pitanje").text("");
+      seconds = 10 * 1000;
+      console.log(data);
+      odgovori = data.odgovori;
+
+      $("#pitanje").text(data.pitanje.tekst);
+      odgovori.forEach(o => {
+        $(".odgovori").append(`<label>${o.odgovora}
+            <input type="checkbox" value="${o.rjesenje}" >
+          </label>
+          <br>
+        `);
+      });
+
+      $("form").append('<button type="submit" class="submitOdg">Odgovori</button>');
+
+      time = setInterval(function () {
+        if(seconds < 0) {
+          clearInterval(time);
+          return;
+        }
+
+        $("#vrijeme").text(seconds)
+        seconds = seconds - 10;
+      }, 10)
+    })
+  });
+
+  $("form").submit(function(e) {
+    e.preventDefault()
+    odgovoriOdabrani = [];
+
+    $("input:checked").each(function() {
+      odgovoriOdabrani.push($(this).attr("value"))
+    })
+
+    let tacno = true
+
+    let tacniOdgovori = odgovori.filter(x => x.rjesenje == true);
+    console.log(tacniOdgovori)
+
+    if(odgovoriOdabrani.length == tacniOdgovori.length) {
+      odgovoriOdabrani.forEach(o => {
+        if(o == "false") {
+          tacno = false;
+        }
+      })
+    } else {
+      tacno = false;
+      bodovi = 0;
+    }
+
+    if(tacno) {
+      bodovi = seconds;
+      console.log("Sve tacno")
+    } else {
+      bodovi = 0;
+      console.log("Nije tacno")
+    }
+
+    console.log(bodovi, soba, localStorage.getItem("username"))
+
+    socket.emit("bodoveProfesoru", {
+      soba,
+      username: localStorage.getItem("username"),
+      bodovi: bodovi
+    })
+
+    clearInterval(time);
+
+    $("form").empty();
+
+    bodovi = 0;
+    seconds = 10 * 1000;
+    $("#vrijeme").empty();
+  });
+</script>

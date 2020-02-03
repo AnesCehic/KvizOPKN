@@ -1,0 +1,94 @@
+<div>
+  <h1>List of questionnaires for lecture</h1>
+
+  <br>
+  <div id="quests">
+    <div>
+      <% if(quests.length === 0) { %>
+        <h3>Nema anketa za predavanje</h3>
+      <% } else { %>
+        <% quests.forEach(q => { %>
+          <div class="anketa card">
+            <p>Naziv: <a href="/questionnaire/<%= q.id %>/questions"> <%= q.naziv %></a></p>
+            <p>Kod za pristup: <%= q.code %></p>
+            <button
+              onclick="updateAnkete('<%= q.id %>', '<%= q.naziv %>', '<%= q.code %>')"
+              class="btn btn-info"
+            >
+              Update
+            </button>
+            <button
+              style="margin-top: 10px;"
+              class="btn btn-danger"
+              onclick="obrisiAnketu('<%= q.id %>')"
+            >Obrisi</button>
+            <a style="margin-top: 10px; color: white;" class="btn btn-success" href="/start/<%= q.id %>">
+              Start
+            </a>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+    <div>
+      <h1>Dodaj ili update anketu</h1>
+
+      <br>
+
+      <form action="/lecture/<%= id %>/questionnaire" method="POST">
+        <input type="hidden" name="id" value="<%= id %>" id="id">
+        <label class="form-group">
+          Naziv ankete: <input type="text" class="form-control" id="naziv" name="naziv" min="4">
+        </label>
+        <label class="form-group">
+          Pristupni kod: <input type="text" class="form-control" id="code" name="code">
+        </label>
+        <br>
+        <button type="submit" class="btn btn-primary">Dodaj anketu</button>
+      </form>
+      <button class="btn btn-primary update" onclick="update()">Update</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function updateAnkete(id, name, code) {
+    let idA = $("#id").val(id);
+    let nazivA = $('#naziv').val(name);
+    let codeA = $('#code').val(code);
+  }
+
+  function update() {
+    let idQ = $("#id").val();
+    let naziv = $('#naziv').val();
+    let code = $('#code').val();
+
+    $.ajax({
+      method: 'PUT',
+      url: '/lecture/<%= id %>/questionnaire/' + idQ,
+      data: {
+        idQ,
+        naziv,
+        code
+      },
+      success: (data, status) => {
+        location.reload();
+      },
+      error: (err) => {
+        console.log(err);
+        alert("DOslo je do greske")
+      }
+    })
+  };
+
+  function obrisiAnketu(idQ) {
+    console.log(id);
+
+    $.ajax({
+      method: 'DELETE',
+      url: '/lecture/<%= id %>/questionnaire/'+ idQ,
+      success: (data, status) => {        
+        location.reload();
+      }
+    })
+  }
+</script>

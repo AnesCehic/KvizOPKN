@@ -1,0 +1,37 @@
+<div style="margin: 30px;">
+  <h1>Dobro došli</h1>
+
+  <h2>Unesite kod za pristup kvizu?</h2>
+
+  <p class="alert"></p>
+
+  <form action="/joinQuiz/checkCode" method="POST">
+    <label class="form-group">
+      Kod: <input type="text" class="form-control" name="kod" id="kod">
+    </label>
+    <br>
+    <input type="submit" class="btn btn-primary" value="Pošalji kod">
+  </form>
+</div>
+
+<script>
+  $("form").submit(function(e) {
+    e.preventDefault();
+
+    $.ajax({
+      method: "POST",
+      url: "/joinQuiz/checkCode",
+      data: {
+        kod: $("#kod").val(),
+      },
+      success: function(data, status) {
+        localStorage.setItem("sobaAnketa", $("#kod").val())
+        location.href = "/joinQuiz/enter";
+      },
+      error: function() {
+        $(".alert").text("Pogrešan kod!");
+        $(".alert").addClass("alert-danger")
+      }
+    });
+  });
+</script>

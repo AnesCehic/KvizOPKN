@@ -8,6 +8,15 @@
       "port": 5432,
       "server": "localhost",
       "username": "postgres"
+    },
+    {
+      "database": "wslmgqzh",
+      "dialect": "PostgreSQL",
+      "name": "BazeProjekat",
+      "password": "cUzUA_cD4rl0ichaCowlIcrMKldgPGrl",
+      "port": 5432,
+      "server": "salt.db.elephantsql.com",
+      "username": "wslmgqzh"
     }
   ]
 }

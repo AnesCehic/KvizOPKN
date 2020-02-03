@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('kvizopkn:server');
 var http = require('http');
+const enc = require('../utils/encryption');
 
 const db = require('../config/db');
 
@@ -23,47 +24,93 @@ app.set('port', port);
 
 var server = http.createServer(app);
 
-var io = require('socket.io').listen(server);
+var io = require('socket.io').listen(server, {
+  transports: ['websocket']
+});
 
 io.on('connection', (socket) => {
 
+  // radi
   socket.on('join_room', ({ room }) => {
-   
-    socket.join(room);
-    console.log(io.sockets.adapter.rooms);
-    socket.emit('joined_room', {
-      room,
-      msg: `Soba ${room}`
-    })
+    db.query("SELECT checkLectureStatus($1) as status", [room])
+      .then(resp => {
+        if(resp.rows[0].status) {
+          socket.join(room);
+          console.log(io.sockets.adapter.rooms);
+          db.query("SELECT * FROM pitanja_za_profesora WHERE predavanje_id = $1 AND odgovoreno = false", [room])
+            .then(resp => {
+              socket.emit('joined_room', {
+                room,
+                msg: `Soba ${room}`,
+                pitanja: resp.rows
+              });
+            });
+        } else {
+          socket.emit("greska", "Predavanje nije aktivno!");
+        }
+      });
   })
 
+  // radi
   socket.on('msg', function ({ question, room }) {
     console.log(question);
-    db.query("insert into pitanja_za_profesora(pitanje_tekst, broj_odobrenja, broj_odbijenica, predavanje_id) values($1, $2, $3, $4) returning id",
+    db.query("insert into pitanja_za_profesora(pitanje_tekst, broj_odobrenja, broj_odbijenica, predavanje_id) values($1, $2, $3, $4) returning *",
       [question, 0, 0, room]
     ).then(result => {
-      let id = result.rows[0].id;
-      io.to(room).emit('msg', { question, id });
+      let pitanje = result.rows[0];
+      io.to(room).emit('msg', pitanje);
     }).catch(err => {
       console.log(err);
     })
   });
 
-  socket.on('odobri', function ({ pitanje, room }) {
-    db.query("UPDATE pitanja_za_profesora SET broj_odobrenja = broj_odobrenja + 1 WHERE predavanje_id=$1 AND pitanje_tekst=$2 returning id, broj_odobrenja", [room, pitanje])
+  socket.on('odobri', function ({ id, room }) {
+    console.log(id);
+    db.query("UPDATE pitanja_za_profesora SET broj_odobrenja = broj_odobrenja + 1 WHERE predavanje_id=$1 AND id=$2 returning *", [room, id])
       .then(res => {
-        let id = res.rows[0].id;
-        let br_od = res.rows[0].broj_odobrenja;
-        console.log(res);
-        console.log("Odobreno");
-        io.to(room).emit('odobrenja', { id, br_od })
+        io.to(room).emit('odobrenja', { pitanje: res.rows[0] })
       })
       .catch(err => {
         console.log("Nije odobreno");
       });
-
-    
   });
+
+  socket.on('odgovori pitanje', function(cookie) {
+    console.log(cookie);
+  })
+  
+  socket.on("join quiz", ({ soba }) => {
+    socket.join(soba);
+  })
+
+  socket.on("igrac", function({ soba, igrac }) {
+    console.log(igrac);
+    io.to(soba).emit("igrac", igrac);
+  });
+
+  socket.on("next question", function({ soba, pitanje }) {
+    console.log(pitanje.id);
+    db.query("select * from odgovor where pitanje_id=$1", [pitanje.id])
+      .then(resp => {
+        io.to(soba).emit("novo pitanje", {
+          pitanje: pitanje,
+          odgovori: resp.rows
+        })
+      })
+      .catch(err => {
+        console.log(err);
+      })
+  })
+
+  socket.on("bodoveProfesoru", function(data) {
+    console.log("Tu smo")
+    console.log(data);
+
+    io.to(data.soba).emit("rezultati", {
+      username: data.username,
+      bodovi: data.bodovi
+    });
+  })
 })
 
 /**
