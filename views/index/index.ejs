@@ -24,6 +24,7 @@
 <script>
   let socket;
   let pitanja = [];
+  var soba;
 
   function updateUI(n) {
     $(".listOfQuestions").empty();
@@ -37,8 +38,14 @@
     socket = io('http://localhost:3000', {
       transports: ['websocket']
     });
+
+    socket.on("odgovoreno", function(id) {
+      pitanja = pitanja.filter(pitanje => pitanje.id != id);
+      updateUI(pitanja);
+    })
     
     socket.on('joined_room', (data) => {
+      soba = data.room
       localStorage.setItem('my_room', data.room);
       alert(data.msg);
       pitanja = data.pitanja;
@@ -73,7 +80,11 @@
   }
 
   function odgovori(id) {
-    console.log(id);
+    socket.emit("odgovori", {
+      room: soba,
+      cookie: document.cookie,
+      id
+    })
   }
 
   $(".addQuestion").click(function () {

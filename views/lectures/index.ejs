@@ -6,11 +6,13 @@
   <table>
     <tr>
       <td>Naziv</td>
+      <td>Id</td>
       <td>Redni broj</td>
     </tr>
     <% predavanja.forEach(pred => { %>
       <tr>
         <td><a href="/lecture/<%= pred.id %>/questionnaires"><%= pred.naziv_predavanja %></a></td>
+        <td><%= pred.id %></td>
         <td>#<%= pred.redni_broj %></td>
         <td><a href="/courses/<%= id %>/lectures/<%= pred.id %>/update">Update</a></td>
         <td><button  onclick="deleteLecture('<%= pred.id %>')">Delete</button></td>

@@ -11,3 +11,9 @@ CREATE TABLE pitanja_za_profesora (
 alter table pitanja_za_profesora
 add constraint unique_pitanje_tekst
 unique (pitanje_tekst)
+
+select * from pitanja_za_profesora
+
+select * from predavanja
+
+select * from anketa

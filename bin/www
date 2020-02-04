@@ -75,8 +75,18 @@ io.on('connection', (socket) => {
       });
   });
 
-  socket.on('odgovori pitanje', function(cookie) {
-    console.log(cookie);
+  socket.on('odgovori', function({ room, id, cookie}) {
+    console.log(room, id, cookie);
+
+    if(cookie) {
+      db.query("update pitanja_za_profesora set odgovoreno=true where predavanje_id = $1 and id = $2", [room, id])
+        .then(() => {
+          io.to(room).emit("odgovoreno", id);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
   })
   
   socket.on("join quiz", ({ soba }) => {
